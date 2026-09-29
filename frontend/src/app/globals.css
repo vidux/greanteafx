@@ -1,0 +1,2120 @@
+/*
+ * GreanTeaFX redesign. Colours, sizes and spacing follow the design mock-up;
+ * the fonts come from `next/font` CSS variables (see layout.tsx) instead of a Google Fonts <link>.
+ */
+
+:root {
+  --bg: #0b0f0d;
+  --surface: #0e1411;
+  --surface-2: #121a16;
+  --well: #0a0e0c;
+  --row-selected: #0f1814;
+  --hover: #1b2621;
+
+  --line: #1c2521;
+  --line-2: #1f2b26;
+  --control: #263430;
+  --control-hover: #34463f;
+  --grid: #151d19;
+  --grid-mid: #2e3d37;
+  --lane-tick: #141b18;
+  --listener: #3a4a43;
+
+  --text: #e6ebe8;
+  --text-2: #c9d3ce;
+  --muted: #8c9a93;
+  --faint: #6b7a73;
+  --dim: #5f6d66;
+
+  /* Keep in sync with the canvas colours in lib/waveform.ts. */
+  --accent: #7ee6b0;
+  --accent-hover: #9af0c5;
+  --accent-ink: #06110b;
+  --accent-tint: #1f3a2e;
+  --accent-wash: #122a1f;
+  --amber: #f0b45a;
+  --amber-tint: #3a2a12;
+  --danger: #f08a8a;
+  --danger-tint: #2a1616;
+
+  --font-sans: var(--font-instrument-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Width of the fixed track-header column; the ruler and both playheads key off it. */
+  --header-w: 300px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* A minimum, not a fixed height: the page grows with its content and the status bar follows it. */
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  /* `clip`, not `hidden`: it trims stray overflow without making the body a scroll container. */
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--accent-tint);
+  color: var(--text);
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: #a8f0c9;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+:where(button, a, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input[type='range'] {
+  accent-color: var(--accent);
+  height: 28px;
+  margin: 0;
+  cursor: pointer;
+}
+
+select {
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--control);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+kbd {
+  font-family: var(--font-mono);
+}
+
+.eyebrow {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.btn-outline {
+  border-color: var(--control);
+  color: var(--text-2);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: var(--control-hover);
+}
+
+.btn-primary {
+  padding: 0 16px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+  cursor: wait;
+}
+
+/* Mint outline: the "add something" actions. Pressed, it fills in. */
+.btn-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: var(--accent-wash);
+}
+
+.btn-accent[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-sm {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.btn-square {
+  width: 36px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-sq-sm {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 16px;
+}
+
+/* Segmented control: views, motion mode and lane tools. */
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.seg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.seg-btn:hover {
+  color: var(--text);
+}
+
+.seg-btn[aria-pressed='true'] {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.seg-axes {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.seg-btn[aria-pressed='true'] .seg-axes {
+  color: var(--accent);
+}
+
+.seg-sm {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.seg-sm kbd {
+  opacity: 0.6;
+}
+
+.segmented-fill {
+  border-radius: 9px;
+}
+
+.segmented-fill .seg-btn {
+  flex: 1;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+}
+
+/* ---------- Brand ---------- */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Header and transport ---------- */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  min-height: 64px;
+  padding: 10px 20px;
+  flex: none;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.app-header .brand {
+  margin-right: auto;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  order: 1;
+}
+
+/* Last in source order but first to wrap: on narrower screens it takes its own full-width row. */
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  order: 2;
+  flex: 1 1 auto;
+  padding: 6px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+}
+
+.btn-icon:hover {
+  background: var(--hover);
+}
+
+.btn-play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-play:hover {
+  background: var(--accent-hover);
+}
+
+.clock {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 150px;
+  padding: 0 12px 0 8px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-total {
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.transport-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--line-2);
+}
+
+.transport-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.input-number {
+  width: 64px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--control);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.transport-master {
+  width: 96px;
+}
+
+.transport-value {
+  min-width: 32px;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+}
+
+/* ---------- Workspace ---------- */
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 20px;
+  flex: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+/* ---------- Cube ---------- */
+
+.cube-panel {
+  flex: 1 1 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+.cube-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cube-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.cube-desc strong {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.cube-desc-locked {
+  color: var(--text-2);
+}
+
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.zoom-readout {
+  min-width: 56px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The edge labels' column width; CubePanel reads it to size the cube. */
+.cube-body {
+  --axis-col: 56px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.cube-grid {
+  display: grid;
+  grid-template-columns: var(--axis-col) auto var(--axis-col);
+  grid-template-rows: 22px auto 22px;
+  align-items: center;
+  justify-items: center;
+}
+
+.axis-label {
+  font-size: 11px;
+  color: var(--faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.axis-top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.axis-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.cube-box {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--well);
+}
+
+.axis-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.axis-bottom {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.cube-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  touch-action: none;
+}
+
+.cube-svg.armed {
+  cursor: crosshair;
+}
+
+.grid-line line {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.grid-mid line {
+  stroke: var(--grid-mid);
+  stroke-width: 1;
+}
+
+.listener-ring {
+  fill: none;
+  stroke: var(--listener);
+  stroke-dasharray: 3 3;
+}
+
+.listener-dot {
+  fill: var(--muted);
+}
+
+.listener-label {
+  fill: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-anchor: middle;
+  user-select: none;
+}
+
+.path-line {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+  opacity: 0.7;
+}
+
+.path-line.faint {
+  stroke-width: 1;
+  opacity: 0.22;
+}
+
+.keyframe {
+  cursor: grab;
+}
+
+.keyframe:active {
+  cursor: grabbing;
+}
+
+.keyframe-hit {
+  fill: transparent;
+}
+
+.keyframe-diamond {
+  fill: var(--well);
+  stroke-width: 1.5;
+}
+
+.keyframe-num {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.source {
+  cursor: grab;
+}
+
+.source:active {
+  cursor: grabbing;
+}
+
+/* Path-mode sources follow their keyframes; pressing one only selects it. */
+.source.path-mode,
+.cube-svg.armed .source {
+  cursor: pointer;
+}
+
+.source-dot {
+  stroke: var(--well);
+  stroke-width: 2;
+}
+
+.source-ring {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.cube-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.source-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.source-label.flip {
+  align-items: flex-end;
+  transform: translate(-100%, -50%);
+}
+
+.source-label.silent {
+  opacity: 0.5;
+}
+
+.source-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-shadow: 0 0 4px var(--well);
+}
+
+.source-depth {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.cube-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.hint-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--hover);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Standing notices under the cube, with the way out attached. */
+.cube-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.cube-note.armed {
+  border: 1px solid var(--accent);
+  background: var(--accent-wash);
+  color: var(--text-2);
+}
+
+.cube-note.armed strong {
+  color: var(--accent);
+}
+
+.cube-note.hidden-note {
+  border: 1px dashed var(--control-hover);
+  color: var(--muted);
+}
+
+.cube-note.hidden-note strong {
+  color: var(--text-2);
+}
+
+/* ---------- 3D view ---------- */
+
+.cube3d {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 280px;
+  max-height: 520px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--well);
+  /* The view owns every gesture on it: orbit, pan and the arrows. */
+  touch-action: none;
+  user-select: none;
+}
+
+.cube3d-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.cube3d-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cube3d-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Tinted like the move arrows (cube3d/CubeScene.ts), lightened for text: a colour is an axis. */
+.axis-x {
+  color: #ff7385;
+}
+
+.axis-y {
+  color: #a6e23a;
+}
+
+.axis-z {
+  color: #5aa9ff;
+}
+
+/* Outranks `.cube-desc strong`. */
+.cube-desc strong.axis-x {
+  color: #ff7385;
+}
+
+.cube-desc strong.axis-y {
+  color: #a6e23a;
+}
+
+.cube-desc strong.axis-z {
+  color: #5aa9ff;
+}
+
+.face-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.kf-num {
+  position: absolute;
+  transform: translate(7px, -125%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.listener-tag {
+  position: absolute;
+  transform: translate(-50%, 10px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--faint);
+}
+
+/* ---------- Inspector ---------- */
+
+.inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 320px;
+  flex: 1 1 320px;
+  max-width: 420px;
+  padding: 16px;
+}
+
+.inspector-empty p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.insp-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.insp-swatch {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--ch-color, var(--accent));
+}
+
+.insp-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.insp-name {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insp-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insp-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.axis-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.axis-slider input[type='range'] {
+  width: 100%;
+}
+
+.axis-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.axis-key {
+  width: 14px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.axis-name {
+  color: var(--text-2);
+}
+
+.axis-end {
+  color: var(--muted);
+}
+
+.axis-value {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--hover);
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.insp-divider {
+  height: 1px;
+  background: var(--line);
+}
+
+.insp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.insp-keyframes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.insp-count {
+  margin-right: auto;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.insp-count strong {
+  font-family: var(--font-mono);
+}
+
+.insp-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------- Timeline ---------- */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 360px;
+  background: var(--bg);
+}
+
+.timeline-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  min-height: 52px;
+  padding: 8px 20px;
+  flex: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.timeline-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.timeline-count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.timeline-bar .segmented {
+  margin-left: 8px;
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.timeline-hint {
+  flex: 1 1 200px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hint-strong {
+  color: var(--text-2);
+}
+
+/* Where a repeat paste will land — amber, because it is not the playhead position. */
+.hint-chain {
+  color: var(--amber);
+}
+
+.clip-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.btn-action.danger:hover:not(:disabled) {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.btn-action kbd {
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.add-track {
+  height: 34px;
+  margin-left: 8px;
+}
+
+.timeline-scroll {
+  position: relative;
+  flex: 1;
+  max-height: 520px;
+  overflow-y: auto;
+  /*
+   * Explicit, not incidental. Setting only `overflow-y` computes `overflow-x` to `auto`, so any
+   * stray pixel of horizontal spill raises a scrollbar — which steals vertical space, which can
+   * then raise the vertical scrollbar too. The timeline is always exactly as wide as its
+   * container, so horizontal scrolling is never wanted.
+   */
+  overflow-x: hidden;
+  scrollbar-color: var(--control) transparent;
+}
+
+.ruler {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.ruler-header-spacer {
+  width: var(--header-w);
+  flex: none;
+  border-right: 1px solid var(--line);
+}
+
+.ruler-lane {
+  flex: 1;
+  position: relative;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.ruler-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  padding: 6px 0 0 6px;
+  border-left: 1px solid var(--control);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Final tick: pinned to the right edge with its line and label facing inward, so the label
+   stays inside the lane instead of overflowing the scroll container. */
+.ruler-tick.at-end {
+  left: auto;
+  right: 0;
+  border-left: none;
+  border-right: 1px solid var(--control);
+  padding-left: 0;
+  padding-right: 6px;
+}
+
+.ruler-head {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-left: 2px solid var(--accent);
+  margin-left: -1px;
+  pointer-events: none;
+}
+
+.ruler-head::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -7px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--accent);
+}
+
+.timeline-rows {
+  position: relative;
+}
+
+.timeline-empty {
+  margin: 0;
+  padding: 28px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--header-w);
+  width: 0;
+  margin-left: -1px;
+  border-left: 2px solid var(--accent);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.track-row {
+  display: flex;
+  min-height: 84px;
+  border-bottom: 1px solid var(--line);
+}
+
+.track-row:hover {
+  background: var(--surface);
+}
+
+.track-row.selected {
+  background: var(--row-selected);
+}
+
+.track-head {
+  display: flex;
+  gap: 12px;
+  width: var(--header-w);
+  flex: none;
+  padding: 12px 14px 12px 0;
+  border-right: 1px solid var(--line);
+}
+
+.track-stripe {
+  width: 4px;
+  flex: none;
+  margin-left: 14px;
+  border-radius: 2px;
+  background: var(--ch-color, var(--accent));
+}
+
+/* Hidden from the cube: still findable in the list, and deliberately subtle. */
+.track-stripe.dashed {
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--ch-color, var(--accent)) 0 5px,
+    transparent 5px 9px
+  );
+}
+
+.track-head-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.track-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.track-name {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.track-name:hover {
+  color: var(--ch-color);
+}
+
+.track-summary {
+  flex: 1;
+  min-width: 0;
+  margin-left: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A sample aged out of the server cache: the waveform still draws, the audio needs re-uploading. */
+.track-summary.warn {
+  color: var(--amber);
+}
+
+.track-icons {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.icon-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.icon-btn.danger:hover {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--control);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.chip:hover {
+  color: var(--text);
+}
+
+.chip.on {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+/* Amber for mute: silenced, not deleted. Red is kept for removing things. */
+.chip.chip-mute.on {
+  border-color: var(--amber);
+  background: var(--amber-tint);
+  color: var(--amber);
+}
+
+/* Two classes, to outrank the `input[type='range']` margin reset. */
+.track-line .track-vol {
+  flex: 1;
+  min-width: 40px;
+  margin-left: 4px;
+}
+
+.track-vol-value {
+  width: 26px;
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.track-lane {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  /* The canvas reads this to draw clip labels in the mono face. */
+  font-family: var(--font-mono);
+  /* One faint line per ruler tick. */
+  background-image: linear-gradient(to right, var(--lane-tick) 1px, transparent 1px);
+  background-size: var(--tick-pct, 100%) 100%;
+  /* Region selection and clip dragging both live on this surface. */
+  touch-action: none;
+  user-select: none;
+}
+
+/* The cursor is the other half of telling you which tool is live. */
+.track-lane.tool-select {
+  cursor: text;
+}
+
+.track-lane.tool-move {
+  cursor: grab;
+}
+
+.track-lane.tool-move:active {
+  cursor: grabbing;
+}
+
+/*
+ * Absolutely positioned, not in flow. A canvas has an intrinsic size (300x150 by default); with
+ * `height: 100%` against a parent of indefinite height the browser falls back to that 2:1 ratio,
+ * and a full-width lane balloons. Out of flow, its containing block is the lane box, so both
+ * dimensions resolve and the row height stays the row's own.
+ */
+.track-lane canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.track-row.silent .track-lane canvas {
+  opacity: 0.45;
+}
+
+.kf-mark {
+  position: absolute;
+  bottom: 2px;
+  width: 8px;
+  height: 8px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 1.5px solid var(--ch-color, var(--accent));
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.lane-status,
+.lane-drop {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.lane-status {
+  color: var(--amber);
+}
+
+.lane-drop {
+  border: 1px dashed var(--accent);
+  background: rgba(18, 42, 31, 0.85);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- Status bar ---------- */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 32px;
+  padding: 0 20px;
+  flex: none;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.status-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+}
+
+.status-dot.live {
+  background: var(--accent);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.status-msg {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-msg:not(:empty)::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--dim);
+}
+
+.status-keys {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* ---------- Quick guide ---------- */
+
+.guide {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid var(--control);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.guide::backdrop {
+  background: rgba(4, 8, 6, 0.7);
+}
+
+.guide-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+}
+
+.guide-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.guide-steps strong {
+  color: var(--text);
+}
+
+.guide-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.guide-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+/* ---------- Help & guide page ---------- */
+
+.help-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.help-back {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--control);
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.help-back:hover {
+  background: var(--hover);
+  border-color: var(--control-hover);
+  color: var(--text);
+}
+
+.help-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 40px;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.help-toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  font-size: 13px;
+}
+
+.help-toc-title {
+  margin: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.help-toc ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--dim);
+}
+
+.help-toc a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.help-toc a:hover {
+  color: var(--accent);
+}
+
+.help-content {
+  max-width: 72ch;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
+.help-content section {
+  scroll-margin-top: 24px;
+  margin-top: 28px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.help-content h2 {
+  margin: 16px 0 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.help-content h3 {
+  margin: 20px 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.help-content p,
+.help-content ul,
+.help-content ol {
+  margin: 0 0 12px;
+}
+
+.help-content li + li {
+  margin-top: 4px;
+}
+
+.help-content b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.help-content code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--amber);
+}
+
+.help-content kbd,
+.help-keys kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--control);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.help-plus {
+  margin: 0 4px;
+  color: var(--muted);
+}
+
+.help-lede {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.help-callout {
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: var(--surface);
+}
+
+.help-steps li::marker {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.help-defs {
+  margin: 0 0 12px;
+}
+
+.help-defs dt {
+  margin-top: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.help-defs dd {
+  margin: 2px 0 0 16px;
+}
+
+.help-table {
+  width: 100%;
+  margin: 0 0 14px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.help-table th,
+.help-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.help-table th {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.help-table tbody tr:hover {
+  background: var(--surface);
+}
+
+.help-shortcuts td:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.help-footer-link {
+  margin-top: 40px;
+}
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 900px) {
+  .inspector {
+    max-width: none;
+  }
+}
+
+@media (max-width: 820px) {
+  :root {
+    --header-w: 240px;
+  }
+
+  .app-header,
+  .timeline-bar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .stage {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .cube-panel,
+  .inspector {
+    padding: 12px;
+  }
+
+  .status-keys {
+    display: none;
+  }
+
+  .help-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 20px 16px 48px;
+  }
+
+  .help-toc {
+    position: static;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+
+  .help-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --header-w: 204px;
+  }
+
+  .cube-body {
+    --axis-col: 22px;
+  }
+
+  .axis-left,
+  .axis-right {
+    writing-mode: vertical-rl;
+  }
+
+  .axis-left {
+    transform: rotate(180deg);
+  }
+
+  .clock {
+    min-width: 0;
+  }
+
+  /* A wide 3D view is too shallow to orbit on a phone. */
+  .cube3d {
+    aspect-ratio: 1;
+    max-height: 440px;
+  }
+
+  /* Ticks sit ~50 px apart on a phone; the full-size labels would run into each other. */
+  .ruler-tick {
+    padding-left: 4px;
+    font-size: 10px;
+  }
+
+  .ruler-tick.at-end {
+    padding-right: 4px;
+  }
+
+  .track-head {
+    gap: 8px;
+    padding-right: 8px;
+  }
+
+  .track-stripe {
+    margin-left: 8px;
+  }
+
+  .track-vol-value,
+  .track-summary {
+    display: none;
+  }
+}
+
+/* ---------- Boot / loading cover ---------- */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--bg);
+  opacity: 1;
+  /* Keep in sync with FADE_MS in LoadingScreen.tsx. */
+  transition: opacity 350ms ease;
+}
+
+.boot.leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-inner {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.boot-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.boot-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-2);
+  overflow: hidden;
+}
+
+.boot-bar-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0.06);
+  transform-origin: left center;
+  background: var(--accent);
+  /* Short and linear: it smooths the 50 ms trickle steps without lagging behind them. */
+  transition: transform 120ms linear;
+}
+
+/* A sheen that runs before JavaScript takes over, so the bar never looks frozen. */
+.boot-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(230, 235, 232, 0.3), transparent);
+  animation: boot-sheen 1.4s ease-in-out infinite;
+}
+
+@keyframes boot-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+/*
+ * Pre-hydration progress. No script runs until React hydrates, which on a cold dev server can take
+ * many seconds, so the bar and percentage animate in CSS alone. Stops sample `trickle()` in
+ * lib/bootProgress.ts (0.95 − 0.89·e^(−0.2t), then 1.2 %/s to 0.95); a unit test checks they agree. JS reads
+ * the fill's live transform on hydration and continues from there.
+ */
+.boot-bar-fill.css-trickle {
+  animation: boot-trickle 18.5s linear forwards;
+}
+
+@keyframes boot-trickle {
+  0% { transform: scaleX(0.06); }
+  5.4% { transform: scaleX(0.221); }
+  10.8% { transform: scaleX(0.353); }
+  16.2% { transform: scaleX(0.462); }
+  21.6% { transform: scaleX(0.55); }
+  27% { transform: scaleX(0.623); }
+  32.4% { transform: scaleX(0.682); }
+  43.2% { transform: scaleX(0.77); }
+  54.1% { transform: scaleX(0.83); }
+  64.9% { transform: scaleX(0.869); }
+  73% { transform: scaleX(0.89); }
+  100% { transform: scaleX(0.95); }
+}
+
+/* An animated integer custom property drives a CSS counter, so the percentage ticks without JS. */
+@property --boot-pct {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 6;
+}
+
+.boot-pct-css {
+  counter-reset: boot-pct var(--boot-pct);
+  animation: boot-pct 18.5s linear forwards;
+}
+
+.boot-pct-css::after {
+  content: counter(boot-pct) '%';
+}
+
+@keyframes boot-pct {
+  0% { --boot-pct: 6; }
+  5.4% { --boot-pct: 22; }
+  10.8% { --boot-pct: 35; }
+  16.2% { --boot-pct: 46; }
+  21.6% { --boot-pct: 55; }
+  27% { --boot-pct: 62; }
+  32.4% { --boot-pct: 68; }
+  43.2% { --boot-pct: 77; }
+  54.1% { --boot-pct: 83; }
+  64.9% { --boot-pct: 87; }
+  73% { --boot-pct: 89; }
+  100% { --boot-pct: 95; }
+}
+
+.boot-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.boot-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.boot.failed .boot-bar-fill {
+  background: var(--danger);
+}
+
+.boot.failed .boot-bar::after {
+  display: none;
+}
+
+.boot.failed .boot-meta {
+  color: var(--danger);
+}
+
+.boot-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.boot-error p {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot,
+  .boot-bar-fill {
+    transition: none;
+  }
+
+  .boot-bar::after {
+    animation: none;
+    display: none;
+  }
+
+  .status-dot.live {
+    animation: none;
+  }
+}

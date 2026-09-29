@@ -1,0 +1,10 @@
+{
+  // Tests are excluded from the app build (see ../tsconfig.json) but still typechecked here.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts", "../src/**/*.ts", "../vitest.config.mts"],
+  "exclude": []
+}

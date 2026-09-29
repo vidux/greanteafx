@@ -1,0 +1,32 @@
+{
+  "name": "greanteafx",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "GreanTeaFX — spatial audio timeline. Root launcher for the frontend and backend services.",
+  "scripts": {
+    "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"yellow.bold,green.bold\" --kill-others \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+
+    "start": "concurrently --names \"backend,frontend\" --prefix-colors \"yellow.bold,green.bold\" --kill-others \"npm:start:backend\" \"npm:start:frontend\"",
+    "start:backend": "npm --prefix backend run start",
+    "start:frontend": "npm --prefix frontend run start",
+
+    "test": "npm --prefix backend run test && npm --prefix frontend run test",
+    "verify": "npm --prefix backend run verify && npm --prefix frontend run verify",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "clean": "rimraf backend/.next frontend/.next backend/.data"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "rimraf": "^6.1.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

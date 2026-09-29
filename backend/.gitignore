@@ -1,0 +1,22 @@
+node_modules/
+.next/
+out/
+build/
+.data/
+*.tsbuildinfo
+next-env.d.ts
+# Environment files hold real config; only the committed examples are safe.
+.env*
+!.env.example
+.DS_Store
+
+# test coverage
+/coverage
+
+*.log
+npm-debug.log*
+*.pem
+Thumbs.db
+.vercel/
+# Local Claude Code settings (per-machine permissions and paths)
+.claude/settings.local.json

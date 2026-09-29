@@ -1,0 +1,20 @@
+{
+  /**
+   * The verification scripts are excluded from the app's build typecheck because
+   * `prototype-reference.ts` is a deliberately unmodified copy of the prototype's JavaScript
+   * — it predates `strict` / `noUncheckedIndexedAccess` and rewriting it to satisfy them
+   * would defeat the point of having an untouched reference to diff against.
+   *
+   * They are still typechecked, just under the looser settings that the original code was
+   * written for.
+   */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": false,
+    // TypeScript 6+ no longer loads every @types package by default.
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["./**/*.ts"],
+  "exclude": []
+}

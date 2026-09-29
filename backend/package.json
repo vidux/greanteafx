@@ -1,0 +1,36 @@
+{
+  "name": "greanteafx-backend",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "GreanTeaFX spatial audio render service — audio decoding, waveform peak extraction, and offline HRTF mixdown.",
+  "scripts": {
+    "dev": "next dev -p 4000",
+    "build": "next build",
+    "start": "next start -p 4000",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts/tsconfig.json && tsc --noEmit -p tests/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "verify": "tsx scripts/verify-render.ts"
+  },
+  "dependencies": {
+    "next": "16.3.6",
+    "node-web-audio-api": "1.0.9",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "@types/react": "^19.3.0",
+    "@vitest/coverage-v8": "^5.0.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  /**
+   * The verification scripts are excluded from the app's `tsc` run because
+   * `prototype-reference.ts` is a deliberately unmodified copy of the prototype's JavaScript —
+   * rewriting it to satisfy `strict` would defeat the point of having an untouched reference
+   * to diff against.
+   *
+   * They still need typechecking though: without this they were compiled only by `tsx`, which
+   * strips types without checking them, so a redeclared variable only surfaced at runtime.
+   * Matches the backend's `scripts/tsconfig.json`.
+   */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": false,
+    // TypeScript 6+ no longer loads every @types package by default.
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["./**/*.ts"],
+  "exclude": []
+}
