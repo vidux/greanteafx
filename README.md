@@ -3,6 +3,14 @@
 A browser-based spatial audio composer: place sound sources in a 3D cube around a fixed
 listener, automate their motion along keyframe paths, and render an HRTF-spatialised mixdown.
 
+![GreanTeaFX 3D view: four sound sources around the listener, one moving along a seven-keyframe path, with red, green and blue move arrows on a keyframe, the inspector on the right and the timeline with a waveform below](docs/screenshots/view_1.png)
+*3D view — orbit around the listener and move sources or keyframes along X, Y and Z with the red,
+green and blue arrows.*
+
+![GreanTeaFX Front view: a seven-keyframe motion path around the listener on a flat grid, the inspector's path settings, and the timeline with the track's waveform and keyframe marks](docs/screenshots/view_2.png)
+*Front view — a seven-keyframe motion path; the diamonds under the waveform mark when the source
+reaches each keyframe.*
+
 Re-implementation of the `spatial-audio-console.html` prototype as two layered services.
 
 ```
